@@ -7,14 +7,14 @@ import (
 )
 
 // @brief:填充明文
-func PKCS5Padding(plaintext []byte, blockSize int) []byte {
+func pKCS5Padding(plaintext []byte, blockSize int) []byte {
 	padding := blockSize - len(plaintext)%blockSize
 	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
 	return append(plaintext, padtext...)
 }
 
 // @brief:去除填充数据
-func PKCS5UnPadding(origData []byte) []byte {
+func pKCS5UnPadding(origData []byte) []byte {
 	length := len(origData)
 	unpadding := int(origData[length-1])
 	return origData[:(length - unpadding)]
@@ -29,7 +29,7 @@ func AesEncrypt(origData, key []byte) ([]byte, error) {
 
 	//AES分组长度为128位，所以blockSize=16，单位字节
 	blockSize := block.BlockSize()
-	origData = PKCS5Padding(origData, blockSize)
+	origData = pKCS5Padding(origData, blockSize)
 	blockMode := cipher.NewCBCEncrypter(block, key[:blockSize]) //初始向量的长度必须等于块block的长度16字节
 	crypted := make([]byte, len(origData))
 	blockMode.CryptBlocks(crypted, origData)
@@ -48,6 +48,6 @@ func AesDecrypt(crypted, key []byte) ([]byte, error) {
 	blockMode := cipher.NewCBCDecrypter(block, key[:blockSize]) //初始向量的长度必须等于块block的长度16字节
 	origData := make([]byte, len(crypted))
 	blockMode.CryptBlocks(origData, crypted)
-	origData = PKCS5UnPadding(origData)
+	origData = pKCS5UnPadding(origData)
 	return origData, nil
 }
